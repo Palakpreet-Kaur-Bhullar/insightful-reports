@@ -1,3 +1,11 @@
+export interface ResearchQuery {
+  query: string;
+  objective: string;
+  user_role: string;
+  scale: "Global" | "Country" | "Regional" | "Local";
+  additional_notes: string;
+}
+
 export interface ReportSection {
   header: string;
   format: "paragraph" | "table" | "mixed";
@@ -26,6 +34,9 @@ export interface FinancialAnalysis {
 
 export interface Report {
   report_title: string;
+  user_role?: string;
+  objective?: string;
+  scale?: string;
   sections: ReportSection[];
   financial_analysis: FinancialAnalysis;
   global_confidence_score: number;

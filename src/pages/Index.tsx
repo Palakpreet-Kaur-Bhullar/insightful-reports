@@ -3,20 +3,36 @@ import { motion, AnimatePresence } from "framer-motion";
 import { QueryInput } from "@/components/QueryInput";
 import { ReportView } from "@/components/ReportView";
 import { ProcessingOverlay } from "@/components/ProcessingOverlay";
-import { sampleReport } from "@/lib/sampleData";
-import type { Report } from "@/lib/types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import type { Report, ResearchQuery } from "@/lib/types";
 
 const Index = () => {
   const [report, setReport] = useState<Report | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (query: string) => {
+  const handleSubmit = async (research: ResearchQuery) => {
     setIsProcessing(true);
-    // Simulate processing pipeline
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.functions.invoke("research", {
+        body: research,
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setReport(data as Report);
+    } catch (err: any) {
+      console.error("Research error:", err);
+      toast({
+        title: "Research failed",
+        description: err.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsProcessing(false);
-      setReport({ ...sampleReport, report_title: query });
-    }, 3500);
+    }
   };
 
   const handleReset = () => {
